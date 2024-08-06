@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory Management System</title>
+    <link rel="stylesheet" href="static//styles.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Inventory Management System</h1>
+      <div class="content">
+        <div class="main-section">
+          <div class="section">
+            <h2>Update Stock</h2>
+            <form id="stockForm">
+              <input
+                type="text"
+                id="stockProductId"
+                placeholder="Product ID"
+                required
+              />
+              <input
+                type="number"
+                id="stockQuantity"
+                placeholder="Quantity"
+                required
+              />
+              <button type="submit">Update Stock</button>
+            </form>
+          </div>
+
+          <div class="section">
+            <h2>Update Sales</h2>
+            <form id="salesForm">
+              <input
+                type="text"
+                id="salesProductId"
+                placeholder="Product ID"
+                required
+              />
+              <input
+                type="number"
+                id="salesQuantity"
+                placeholder="Quantity"
+                required
+              />
+              <button type="submit">Update Sales</button>
+            </form>
+          </div>
+
+          <div class="section">
+            <h2>Analyze Inventory</h2>
+            <button id="analyzeButton">Analyze</button>
+            <div id="results"></div>
+          </div>
+        </div>
+
+        <div class="chatbot-section">
+          <h2>Chatbot</h2>
+          <div id="chatbox"></div>
+          <form id="chatForm">
+            <input
+              type="text"
+              id="userInput"
+              placeholder="Ask a question..."
+              required
+            />
+            <button type="submit">Send</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        $("#stockForm").submit(function (e) {
+          e.preventDefault();
+          $.ajax({
+            url: "/update_stock",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+              product_id: $("#stockProductId").val(),
+              quantity: parseInt($("#stockQuantity").val()),
+            }),
+            success: function (response) {
+              alert(response.message);
+            },
+            error: function (xhr, status, error) {
+              alert("Error: " + xhr.responseJSON.error);
+            },
+          });
+        });
+
+        $("#salesForm").submit(function (e) {
+          e.preventDefault();
+          $.ajax({
+            url: "/update_sales",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+              product_id: $("#salesProductId").val(),
+              quantity: parseInt($("#salesQuantity").val()),
+            }),
+            success: function (response) {
+              alert(response.message);
+            },
+            error: function (xhr, status, error) {
+              alert("Error: " + xhr.responseJSON.error);
+            },
+          });
+        });
+
+        $("#analyzeButton").click(function () {
+          $.ajax({
+            url: "/analyze_inventory",
+            type: "GET",
+            success: function (response) {
+              let resultsHtml =
+                "<h3>Inventory Analysis</h3><table><tr><th>Product ID</th><th>Status</th><th>Current Stock</th><th>Expected Sales</th><th>Suggestion</th></tr>";
+              for (let productId in response.inventory_analysis) {
+                let product = response.inventory_analysis[productId];
+                resultsHtml += `<tr>
+                                <td>${productId}</td>
+                                <td>${product.status}</td>
+                                <td>${product.current_stock}</td>
+                                <td>${product.expected_sales || "N/A"}</td>
+                                <td>${product.suggestion}</td>
+                            </tr>`;
+              }
+              resultsHtml += "</table>";
+              $("#results").html(resultsHtml);
+            },
+            error: function (xhr, status, error) {
+              alert("Error: " + xhr.responseJSON.error);
+            },
+          });
+        });
+
+        $("#chatForm").submit(function (e) {
+          e.preventDefault();
+          let userMessage = $("#userInput").val();
+          $("#chatbox").append(`<p class="user-message">${userMessage}</p>`);
+          $.ajax({
+            url: "/chatbot",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+              message: userMessage,
+            }),
+            success: function (response) {
+              $("#chatbox").append(
+                `<p class="bot-message">${response.response}</p>`
+              );
+              $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight);
+            },
+            error: function (xhr, status, error) {
+              $("#chatbox").append(
+                `<p class="bot-message">Sorry, an error occurred.</p>`
+              );
+            },
+          });
+          $("#userInput").val("");
+        });
+      });
+    </script>
+  </body>
+</html>
