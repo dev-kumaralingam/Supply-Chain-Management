@@ -28,4 +28,6 @@ INSERT INTO sales (product_id, quantity, date) VALUES
 ('PROD002', 4, '2023-08-03'),
 ('PROD001', 6, '2023-08-03');
 
+SELECT* FROM sales;
+
 drop DATABASE inventory_management;
