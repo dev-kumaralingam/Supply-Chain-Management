@@ -1,3 +1,4 @@
+# app.py
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import mysql.connector
@@ -162,7 +163,7 @@ def get_groq_inventory_analysis(inventory_data):
             {"role": "system", "content": "You are an AI assistant specialized in inventory management and business analysis. Provide concise responses in markdown format."},
             {"role": "user", "content": prompt}
         ],
-        "max_tokens": 300,
+        "max_tokens": 1000,
         "temperature": 0.7
     }
     

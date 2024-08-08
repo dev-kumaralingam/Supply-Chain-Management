@@ -1,15 +1,18 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Inventory Management System</title>
-    <link rel="stylesheet" href="static//styles.css" />
+    <link rel="stylesheet" href="static/styles.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   </head>
   <body>
     <div class="container">
-      <h1>Inventory Management System</h1>
+      <header>
+        <h1>Inventory Management System</h1>
+      </header>
       <div class="content">
         <div class="main-section">
           <div class="section">
@@ -118,23 +121,16 @@
             url: "/analyze_inventory",
             type: "GET",
             success: function (response) {
-              let resultsHtml =
-                "<h3>Inventory Analysis</h3><table><tr><th>Product ID</th><th>Status</th><th>Current Stock</th><th>Expected Sales</th><th>Suggestion</th></tr>";
-              for (let productId in response.inventory_analysis) {
-                let product = response.inventory_analysis[productId];
-                resultsHtml += `<tr>
-                                <td>${productId}</td>
-                                <td>${product.status}</td>
-                                <td>${product.current_stock}</td>
-                                <td>${product.expected_sales || "N/A"}</td>
-                                <td>${product.suggestion}</td>
-                            </tr>`;
+              if (response.analysis) {
+                $("#results").html(`<div class="markdown-content">${response.analysis}</div>`);
+              } else if (response.error) {
+                $("#results").html(`<p class="error">${response.error}</p>`);
+              } else {
+                $("#results").html(`<p class="error">An unexpected error occurred.</p>`);
               }
-              resultsHtml += "</table>";
-              $("#results").html(resultsHtml);
             },
             error: function (xhr, status, error) {
-              alert("Error: " + xhr.responseJSON.error);
+              $("#results").html(`<p class="error">Error: ${xhr.responseJSON.error}</p>`);
             },
           });
         });
@@ -152,7 +148,7 @@
             }),
             success: function (response) {
               $("#chatbox").append(
-                `<p class="bot-message">${response.response}</p>`
+                `<div class="markdown-content">${response.response}</div>`
               );
               $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight);
             },
