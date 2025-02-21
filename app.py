@@ -181,6 +181,44 @@ def get_groq_inventory_analysis(inventory_data):
     except KeyError as e:
         logging.error(f"Unexpected response format from Groq AI: {str(e)}")
         return {"error": "Unexpected response format from Groq AI"}
+    
+@app.route('/transport_route', methods=['POST'])
+def transport_route():
+    data = request.json
+    start_point = data['start']
+    destination = data['destination']
+    important_points = data.get('important_points', [])
+    
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    prompt = f"""
+    Given the starting point '{start_point}' and destination '{destination}', 
+    suggest an optimized transportation route passing through important locations: {important_points}. 
+    Explain the choice of this route in terms of efficiency, safety, and cost-effectiveness.
+    Provide a concise analysis and actionable recommendations in markdown format.
+    """
+    
+    payload = {
+        "model": "mixtral-8x7b-32768",
+        "messages": [
+            {"role": "system", "content": "You are an AI assistant specialized in transportation management. Provide optimized routes with justifications.Provide concise responses in markdown format."},
+            {"role": "user", "content": prompt}
+        ],
+        "max_tokens": 500,
+        "temperature": 0.7
+    }
+    
+    try:
+        response = requests.post(GROQ_API_URL, headers=headers, json=payload)
+        response.raise_for_status()
+        route_info = response.json()['choices'][0]['message']['content']
+        return jsonify({"route": route_info})
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error communicating with Groq AI: {str(e)}")
+        return jsonify({"error": "Failed to get transport route"}), 500
 
 @app.route('/chatbot', methods=['POST'])
 def chatbot():

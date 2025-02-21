@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -18,18 +17,8 @@
           <div class="section">
             <h2>Update Stock</h2>
             <form id="stockForm">
-              <input
-                type="text"
-                id="stockProductId"
-                placeholder="Product ID"
-                required
-              />
-              <input
-                type="number"
-                id="stockQuantity"
-                placeholder="Quantity"
-                required
-              />
+              <input type="text" id="stockProductId" placeholder="Product ID" required />
+              <input type="number" id="stockQuantity" placeholder="Quantity" required />
               <button type="submit">Update Stock</button>
             </form>
           </div>
@@ -37,18 +26,8 @@
           <div class="section">
             <h2>Update Sales</h2>
             <form id="salesForm">
-              <input
-                type="text"
-                id="salesProductId"
-                placeholder="Product ID"
-                required
-              />
-              <input
-                type="number"
-                id="salesQuantity"
-                placeholder="Quantity"
-                required
-              />
+              <input type="text" id="salesProductId" placeholder="Product ID" required />
+              <input type="number" id="salesQuantity" placeholder="Quantity" required />
               <button type="submit">Update Sales</button>
             </form>
           </div>
@@ -58,18 +37,24 @@
             <button id="analyzeButton">Analyze</button>
             <div id="results"></div>
           </div>
+
+          <div class="transportation-section">
+            <h2>Transportation Management</h2>
+            <form id="transportForm">
+              <input type="text" id="startPoint" placeholder="Starting Point" required />
+              <input type="text" id="destination" placeholder="Destination" required />
+              <button type="submit">Find Route</button>
+            </form>
+            <div id="routeResults"></div>
+            <map name="routeMap" id="routeMap"></map>
+          </div>
         </div>
 
         <div class="chatbot-section">
           <h2>Chatbot</h2>
           <div id="chatbox"></div>
           <form id="chatForm">
-            <input
-              type="text"
-              id="userInput"
-              placeholder="Ask a question..."
-              required
-            />
+            <input type="text" id="userInput" placeholder="Ask a question..." required />
             <button type="submit">Send</button>
           </form>
         </div>
@@ -91,7 +76,7 @@
             success: function (response) {
               alert(response.message);
             },
-            error: function (xhr, status, error) {
+            error: function (xhr) {
               alert("Error: " + xhr.responseJSON.error);
             },
           });
@@ -110,7 +95,7 @@
             success: function (response) {
               alert(response.message);
             },
-            error: function (xhr, status, error) {
+            error: function (xhr) {
               alert("Error: " + xhr.responseJSON.error);
             },
           });
@@ -121,15 +106,9 @@
             url: "/analyze_inventory",
             type: "GET",
             success: function (response) {
-              if (response.analysis) {
-                $("#results").html(`<div class="markdown-content">${response.analysis}</div>`);
-              } else if (response.error) {
-                $("#results").html(`<p class="error">${response.error}</p>`);
-              } else {
-                $("#results").html(`<p class="error">An unexpected error occurred.</p>`);
-              }
+              $("#results").html(`<div class="markdown-content">${response.analysis}</div>`);
             },
-            error: function (xhr, status, error) {
+            error: function (xhr) {
               $("#results").html(`<p class="error">Error: ${xhr.responseJSON.error}</p>`);
             },
           });
@@ -143,22 +122,35 @@
             url: "/chatbot",
             type: "POST",
             contentType: "application/json",
-            data: JSON.stringify({
-              message: userMessage,
-            }),
+            data: JSON.stringify({ message: userMessage }),
             success: function (response) {
-              $("#chatbox").append(
-                `<div class="markdown-content">${response.response}</div>`
-              );
+              $("#chatbox").append(`<div class="markdown-content">${response.response}</div>`);
               $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight);
             },
-            error: function (xhr, status, error) {
-              $("#chatbox").append(
-                `<p class="bot-message">Sorry, an error occurred.</p>`
-              );
+            error: function () {
+              $("#chatbox").append(`<p class="bot-message">Sorry, an error occurred.</p>`);
             },
           });
           $("#userInput").val("");
+        });
+
+        $("#transportForm").submit(function (e) {
+          e.preventDefault();
+          $.ajax({
+            url: "/transport_route",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+              start: $("#startPoint").val(),
+              destination: $("#destination").val(),
+            }),
+            success: function (response) {
+              $("#routeResults").html(`<p>${response.route}</p><p>${response.reason}</p>`);
+            },
+            error: function (xhr) {
+              alert("Error: " + xhr.responseJSON.error);
+            },
+          });
         });
       });
     </script>
